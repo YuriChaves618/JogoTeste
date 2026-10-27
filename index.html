@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cena 1 — Floresta</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;overflow:hidden;font-family:Georgia,"Times New Roman",serif;color:#e9e6da;user-select:none}
+#stage{position:fixed;inset:0;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+#boy{position:absolute;left:0;width:0;height:0}
+#boy img{position:absolute;left:0;bottom:0;transform:translateX(-50%);display:none;pointer-events:none}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,rgba(0,0,0,0) 45%,rgba(5,8,5,.7) 100%),linear-gradient(rgba(5,8,5,.55),rgba(0,0,0,0) 35%)}
+#fade{position:absolute;inset:0;background:#000;opacity:1;transition:opacity 2.5s ease;pointer-events:none}
+#cap{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-style:italic;font-size:clamp(15px,2.4vw,22px);letter-spacing:.04em;color:#b9b8ab;opacity:0;transition:opacity 1s;padding:0 6%;pointer-events:none}
+#cap.on{opacity:1}
+#dlg{position:absolute;left:50%;top:calc(max(12px,env(safe-area-inset-top)) + 46px);transform:translateX(-50%);width:min(92%,780px);min-height:112px;padding:16px 22px 18px;background:rgba(10,13,10,.82);border:1px solid rgba(220,215,190,.35);border-radius:6px;display:none;cursor:pointer}
+#dlg .who{font-size:12px;letter-spacing:.25em;color:#d1a070;margin-bottom:8px}
+#dlg .txt{font-size:clamp(17px,2.6vw,22px);line-height:1.5;min-height:3em}
+#dlg .hint{position:absolute;right:16px;bottom:8px;font-size:14px;color:#d1a070;animation:b 1s infinite;display:none}
+@keyframes b{50%{opacity:.2}}
+#choice{position:absolute;inset:0;display:none;align-items:flex-start;justify-content:center;padding-top:calc(max(12px,env(safe-area-inset-top)) + 46px);background:rgba(0,0,0,.3)}
+#choice .p{width:min(90%,520px);padding:28px;text-align:center;background:rgba(10,13,10,.9);border:1px solid rgba(220,215,190,.35);border-radius:6px}
+#choice h2{font-size:13px;letter-spacing:.3em;color:#d1a070;margin-bottom:14px;font-weight:normal}
+#choice p{opacity:.75;font-style:italic;margin-bottom:22px;line-height:1.5}
+button{font:inherit;color:#e9e6da;background:transparent;border:1px solid rgba(220,215,190,.5);padding:10px 22px;border-radius:4px;cursor:pointer}
+button:hover{background:rgba(255,255,255,.1)}
+#start{position:absolute;inset:0;z-index:5;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;cursor:pointer}
+#start h1{font-weight:normal;letter-spacing:.35em;font-size:clamp(16px,3vw,26px)}
+#start small{opacity:.55;font-style:italic}
+#mute{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;z-index:6;padding:6px 10px;font-size:18px;display:none}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv"></canvas>
+  <div id="boy"></div>
+  <div id="vig"></div>
+  <div id="cap"></div>
+  <div id="dlg"><div class="who"></div><div class="txt"></div><div class="hint">▼</div></div>
+  <div id="choice"><div class="p"><h2>— ESCOLHA —</h2><p>As opções ainda não foram definidas.<br>Cena em fase de teste.</p><button id="again">↻ Reiniciar cena</button></div></div>
+  <div id="fade"></div>
+  <button id="mute" aria-label="Som">🔊</button>
+  <div id="start"><h1>CENA 1</h1><div id="sMsg">Carregando…</div><small>🎧 use fones de ouvido</small></div>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const cv=$('#cv'),ctx=cv.getContext('2d'),boyEl=$('#boy');
+
+/* ---------- imagens ---------- */
+const WALK=[1,2,3,4,5,6,7].map(n=>'walk_0'+n);
+const NAMES=['front','left',...WALK];
+const IMG={};
+const loaded=Promise.all(NAMES.map(n=>new Promise(r=>{
+  const i=new Image();i.onload=r;i.onerror=r;i.src='img/'+n+'.webp';i.className='s';i.dataset.n=n;IMG[n]=i;boyEl.appendChild(i);
+})));
+
+/* ---------- cenário procedural (floresta) ---------- */
+const LW=2400,LH=1080;
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function layer(seed,o){
+  const c=document.createElement('canvas');c.width=LW;c.height=LH;const g=c.getContext('2d'),r=rng(seed);
+  for(let i=0;i<o.n;i++){
+    const x=(i+r())*LW/o.n,w=o.w0+r()*(o.w1-o.w0),lean=(r()-.5)*40,by=o.base*LH;
+    for(const dx of[-LW,0,LW]){
+      const X=x+dx,gr=g.createLinearGradient(X-w/2,0,X+w/2,0);
+      gr.addColorStop(0,o.c1);gr.addColorStop(.35,o.c2);gr.addColorStop(1,o.c1);
+      g.fillStyle=gr;g.beginPath();
+      g.moveTo(X-w*.85,by+40);g.quadraticCurveTo(X-w*.5,by-70,X-w*.5+lean*.3,by-220);
+      g.lineTo(X-w*.36+lean,-20);g.lineTo(X+w*.36+lean,-20);g.lineTo(X+w*.5+lean*.3,by-220);
+      g.quadraticCurveTo(X+w*.5,by-70,X+w*.85,by+40);g.closePath();g.fill();
+      g.strokeStyle='rgba(0,0,0,.22)';g.lineWidth=2;
+      for(let k=0;k<5;k++){const u=X+(r()-.5)*w*.7;g.beginPath();g.moveTo(u,by-r()*80);g.lineTo(u+lean*.6,r()*by*.6);g.stroke()}
+      g.strokeStyle=o.c1;g.lineCap='round';
+      for(let k=0;k<2;k++){const y=80+r()*320,d=r()<.5?-1:1;g.lineWidth=w*.1;g.beginPath();g.moveTo(X,y);g.quadraticCurveTo(X+d*w*.7,y-60,X+d*w*(1+r()),y-140-r()*80);g.stroke()}
+    }
+  }
+  g.globalCompositeOperation='source-atop';
+  const f=g.createLinearGradient(0,0,0,LH);f.addColorStop(0,`rgba(${o.fog},${o.fa0})`);f.addColorStop(1,`rgba(${o.fog},${o.fa1})`);
+  g.fillStyle=f;g.fillRect(0,0,LW,LH);return c;
+}
+const L={
+  far:{c:layer(11,{n:16,w0:50,w1:90,base:.76,c1:'#566650',c2:'#6a7a63',fog:'138,154,128',fa0:.55,fa1:.2}),sp:.12},
+  mid:{c:layer(22,{n:8,w0:110,w1:170,base:.82,c1:'#33402f',c2:'#43523d',fog:'110,126,102',fa0:.4,fa1:.05}),sp:.4},
+  near:{c:layer(33,{n:4,w0:200,w1:280,base:.88,c1:'#171e16',c2:'#222c20',fog:'0,0,0',fa0:0,fa1:0}),sp:.85}
+};
+const gl=document.createElement('canvas');gl.width=LW;gl.height=300;
+{const g=gl.getContext('2d'),r=rng(77);
+ for(let i=0;i<420;i++){const x=r()*LW,y=r()*300,s=4+r()*10,h=r();
+  g.fillStyle=h<.4?'rgba(120,80,40,.5)':h<.7?'rgba(70,52,30,.55)':'rgba(15,22,14,.5)';
+  for(const dx of[-LW,0,LW]){g.beginPath();g.ellipse(x+dx,y,s*1.4,s*.5,r()*3,0,7);g.fill()}}}
+
+let W=0,H=0,dpr=1,CH=500;
+const leaves=Array.from({length:26},(_,i)=>({x:Math.random(),y:Math.random(),v:6+Math.random()*14,p:Math.random()*6,s:3+Math.random()*4}));
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  CH=Math.min(H*.62,W*1.4);
+  for(const n of NAMES){const i=IMG[n];if(!i||!i.naturalHeight)continue;
+    i.style.height=(CH*i.naturalHeight/600)+'px';i.style.bottom=n.startsWith('walk')?(-5*CH/600)+'px':'0px'}
+  boyEl.style.bottom=(H*.1)+'px';
+}
+addEventListener('resize',resize);
+
+/* ---------- estado do menino ---------- */
+let pose='front',scroll=0,speed=0,tSpeed=0,boyX=-999,tgtX=0,frameT=0,lastIdx=-1,walkV=200;
+function setPose(p){
+  pose=p;tSpeed=p==='walk'?walkV:0;
+  for(const n of NAMES)IMG[n].style.display='none';
+  if(p==='front')IMG.front.style.display='block';
+  if(p==='back')IMG.left.style.display='block';
+  if(p==='walk'){frameT=0;lastIdx=-1;IMG[WALK[0]].style.display='block'}
+}
+
+let last=0;
+function loop(t){
+  const dt=Math.min(.05,(t-last)/1000||0);last=t;
+  speed+=(tSpeed-speed)*Math.min(1,dt*6);
+  scroll+=speed*dt;
+  if(pose==='walk'&&boyX<tgtX)boyX=Math.min(tgtX,boyX+speed*dt);
+  if(pose==='walk'){
+    frameT+=dt*8;const idx=Math.floor(frameT)%WALK.length;
+    if(idx!==lastIdx){
+      for(const n of WALK)IMG[n].style.display='none';IMG[WALK[idx]].style.display='block';
+      if(idx===0||idx===3)stepSnd(.5);lastIdx=idx;
+    }
+  }
+  boyEl.style.transform=`translateX(${boyX}px) scaleX(${pose==='walk'?-1:1})`;
+  draw(dt);requestAnimationFrame(loop);
+}
+function draw(dt){
+  const s=H/LH;ctx.setTransform(dpr,0,0,dpr,0,0);
+  const sky=ctx.createLinearGradient(0,0,0,H*.8);sky.addColorStop(0,'#3d4a3a');sky.addColorStop(1,'#8a9a80');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  const tile=(l,y0,hh)=>{const w=LW*s;let x=-((scroll*l.sp)%w);for(;x<W;x+=w-1)ctx.drawImage(l.c,0,0,l.c.width,l.c.height,x,y0,w,hh)};
+  tile(L.far,0,H);
+  const gg=ctx.createLinearGradient(0,H*.76,0,H);gg.addColorStop(0,'#5b6a52');gg.addColorStop(.25,'#3b4733');gg.addColorStop(1,'#1c241b');
+  ctx.fillStyle=gg;ctx.fillRect(0,H*.76,W,H*.24);
+  tile(L.mid,0,H);tile(L.near,0,H);
+  {const w=LW*s;let x=-(scroll%w);for(;x<W;x+=w-1)ctx.drawImage(gl,0,0,LW,300,x,H*.84,w,H*.16)}
+  for(const l of leaves){
+    l.p+=dt*1.5;l.x-=(l.v*.4+speed*.5)*dt/W*1.0;l.y+=(8+l.v*.5)*dt/H;
+    if(l.x<-.05){l.x=1.05;l.y=Math.random()*.6}if(l.y>1.02){l.y=-.05;l.x=Math.random()}
+    ctx.fillStyle='rgba(150,100,50,.75)';ctx.beginPath();ctx.ellipse(l.x*W+Math.sin(l.p)*14,l.y*H,l.s,l.s*.55,l.p,0,7);ctx.fill();
+  }
+}
+
+/* ---------- áudio sintetizado ---------- */
+let ac,master,windG,nb,muted=false;
+function initAudio(){
+  if(ac)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  ac=new AC();master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
+  nb=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const src=ac.createBufferSource();src.buffer=nb;src.loop=true;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=480;bp.Q.value=.7;
+  windG=ac.createGain();windG.gain.value=0;src.connect(bp);bp.connect(windG);windG.connect(master);src.start();
+  const l1=ac.createOscillator(),g1=ac.createGain();l1.frequency.value=.13;g1.gain.value=260;l1.connect(g1);g1.connect(bp.frequency);l1.start();
+  const l2=ac.createOscillator(),g2=ac.createGain();l2.frequency.value=.21;g2.gain.value=.05;l2.connect(g2);g2.connect(windG.gain);l2.start();
+}
+function windUp(sec=3){if(!ac)return;windG.gain.setTargetAtTime(.17,ac.currentTime,sec/3)}
+function burst(freq,q,type,vol,dur,off=0,rate=1){
+  if(!ac||muted)return;const t=ac.currentTime+off,s=ac.createBufferSource();s.buffer=nb;s.playbackRate.value=rate;
+  const f=ac.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;
+  const g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  s.connect(f);f.connect(g);g.connect(master);s.start(t,Math.random()*1.5,dur+.05);
+}
+function stepSnd(v=1){burst(2200,.8,'bandpass',.22*v,.2);for(let i=0;i<4;i++)burst(2500+Math.random()*3000,2,'bandpass',.1*v,.04,.02+Math.random()*.16)}
+function crack(){burst(900,3,'bandpass',.22,.07);burst(1400,4,'bandpass',.14,.05,.07);burst(700,3,'bandpass',.1,.09,.18)}
+$('#mute').onclick=e=>{e.stopPropagation();muted=!muted;if(master)master.gain.value=muted?0:.9;e.target.textContent=muted?'🔇':'🔊'};
+
+/* ---------- diálogo / legenda ---------- */
+const dlg=$('#dlg'),cap=$('#cap'),fade=$('#fade');
+let typing=null,pend=null,full='',finFn=null;
+function say(text,who='MENINO'){
+  return new Promise(res=>{
+    dlg.style.display='block';dlg.querySelector('.who').textContent=who;
+    const tx=dlg.querySelector('.txt'),hint=dlg.querySelector('.hint');tx.textContent='';hint.style.display='none';full=text;let i=0;
+    typing=setInterval(()=>{i++;tx.textContent=text.slice(0,i);if(i>=text.length)done()},34);
+    function done(){clearInterval(typing);typing=null;tx.textContent=text;hint.style.display='block';pend=()=>{pend=null;dlg.style.display='none';res()}}
+    finFn=done;
+  });
+}
+function advance(){
+  if(typing){finFn&&finFn();return}
+  if(pend)pend();
+}
+$('#dlg').addEventListener('click',advance);
+addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();advance()}});
+async function narr(text,ms,on){cap.textContent=text;cap.classList.add('on');on&&on();await wait(ms);cap.classList.remove('on');await wait(900)}
+
+/* ---------- roteiro: CENA 1 ---------- */
+async function run(){
+  $('#choice').style.display='none';
+  fade.style.transition='none';fade.style.opacity=1;void fade.offsetWidth;fade.style.transition='';
+  speed=0;scroll=0;boyX=-CH*.4;tgtX=W*(W<700?.5:.42);setPose('front');
+  await wait(600);
+  await narr('[ O som do vento entre as árvores ]',2600,()=>windUp(3));
+  await narr('[ Galhos estalam ao longe ]',2400,()=>setTimeout(crack,500));
+  await narr('[ Passos lentos sobre folhas secas ]',2200,()=>{for(let i=0;i<4;i++)setTimeout(()=>stepSnd(.35),i*520)});
+  fade.style.opacity=0;setPose('walk');
+  await wait(4200);
+  await say('— ...Alô?');
+  setPose('front');
+  await narr('Silêncio.',2200);
+  await say('— Tem alguém aí?');
+  await wait(3600);                       // olha discretamente para a tela
+  await say('— Ah... que bom. Por um momento, achei que fosse o único perdido aqui.');
+  setPose('walk');await wait(3000);       // continua andando
+  setPose('back');await wait(2800);       // olha para trás, tudo igual
+  setPose('walk');await wait(2000);
+  setPose('front');
+  await say('— Você sabe para onde estamos indo?');
+  await wait(400);
+  $('#choice').style.display='flex';      // ESCOLHA (sem opções por enquanto)
+}
+$('#again').onclick=run;
+
+/* ---------- início ---------- */
+loaded.then(()=>{
+  resize();requestAnimationFrame(loop);
+  $('#sMsg').textContent='Toque para começar';
+  $('#start').onclick=()=>{
+    initAudio();if(ac&&ac.state==='suspended')ac.resume();
+    $('#start').style.display='none';$('#mute').style.display='block';run();
+  };
+});
+})();
+</script>
+</body>
+</html>
