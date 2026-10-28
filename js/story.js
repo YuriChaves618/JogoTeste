@@ -75,7 +75,6 @@ async function run(fromStart) {
   }
   await say("— Sabe... eu não costumo conversar com estranhos.");
   startWild();
-  await narr("Ele pensa por alguns segundos.", 2800);
   await say("— Minha mãe diz que isso é perigoso. Meu pai dizia a mesma coisa. Minha avó, então... ela provavelmente teria me dado uma bronca tão grande que eu ainda estaria ouvindo.");
   setPose("smile");
   await narr("Um pequeno sorriso aparece em seu rosto.", 2400);
