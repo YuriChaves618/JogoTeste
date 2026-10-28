@@ -3,268 +3,53 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cena 1 — Floresta</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:#000;overflow:hidden;font-family:Georgia,"Times New Roman",serif;color:#e9e6da;user-select:none}
-#stage{position:fixed;inset:0;overflow:hidden}
-canvas{position:absolute;inset:0;width:100%;height:100%}
-#boy{position:absolute;left:0;width:0;height:0}
-#boy img{position:absolute;left:0;bottom:0;transform:translateX(-50%);display:none;pointer-events:none}
-#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,rgba(0,0,0,0) 45%,rgba(5,8,5,.7) 100%),linear-gradient(rgba(5,8,5,.55),rgba(0,0,0,0) 35%)}
-#fade{position:absolute;inset:0;background:#000;opacity:1;transition:opacity 2.5s ease;pointer-events:none}
-#cap{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-style:italic;font-size:clamp(15px,2.4vw,22px);letter-spacing:.04em;color:#e4e2d4;text-shadow:0 0 6px #000,0 0 14px #000,0 1px 2px #000;opacity:0;transition:opacity 1s;padding:0 6%;pointer-events:none}
-#cap.on{opacity:1}
-#dlg{position:absolute;left:50%;top:calc(max(12px,env(safe-area-inset-top)) + 46px);transform:translateX(-50%);width:min(92%,780px);min-height:112px;padding:16px 22px 18px;background:rgba(10,13,10,.82);border:1px solid rgba(220,215,190,.35);border-radius:6px;display:none;cursor:pointer}
-#dlg .who{font-size:12px;letter-spacing:.25em;color:#d1a070;margin-bottom:8px}
-#dlg .txt{font-size:clamp(17px,2.6vw,22px);line-height:1.5;min-height:3em}
-#dlg .hint{position:absolute;right:16px;bottom:8px;font-size:14px;color:#d1a070;animation:b 1s infinite;display:none}
-@keyframes b{50%{opacity:.2}}
-#choice{position:absolute;inset:0;display:none;align-items:flex-start;justify-content:center;padding-top:calc(max(12px,env(safe-area-inset-top)) + 46px);background:rgba(0,0,0,.3)}
-#choice .p{width:min(90%,520px);padding:28px;text-align:center;background:rgba(10,13,10,.9);border:1px solid rgba(220,215,190,.35);border-radius:6px}
-#choice h2{font-size:13px;letter-spacing:.3em;color:#d1a070;margin-bottom:14px;font-weight:normal}
-#choice p{opacity:.75;font-style:italic;margin-bottom:22px;line-height:1.5}
-button{font:inherit;color:#e9e6da;background:transparent;border:1px solid rgba(220,215,190,.5);padding:10px 22px;border-radius:4px;cursor:pointer}
-button:hover{background:rgba(255,255,255,.1)}
-#start{position:absolute;inset:0;z-index:5;background:#1b221b url(img/inicio.webp) center/cover no-repeat;overflow:hidden}
-#start::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 60%,rgba(0,0,0,0) 50%,rgba(5,8,5,.6) 100%),linear-gradient(rgba(0,0,0,0) 60%,rgba(5,8,5,.55))}
-#load{position:absolute;inset:0;z-index:7;background:radial-gradient(ellipse at 50% 55%,#2a342a 0%,#101510 75%,#080b08 100%);transition:opacity .7s ease;overflow:hidden}
-#jbox{position:absolute;left:50%;width:0;height:0;z-index:1}
-#lTxt{position:absolute;left:0;right:0;bottom:max(9vh,env(safe-area-inset-bottom));text-align:center;font-style:italic;font-size:clamp(15px,2.4vw,20px);letter-spacing:.4em;color:#e4e2d4;text-shadow:0 0 6px #000;animation:b 1.4s infinite}
-#leaves{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
-#jbox img{position:absolute;left:0;bottom:0;transform:translateX(-50%);display:none;pointer-events:none}
-#sUi{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-#go{font-size:clamp(18px,3vw,24px);letter-spacing:.35em;padding:14px 46px 14px 54px;background:rgba(10,14,10,.7);border:1px solid rgba(235,230,200,.7);border-radius:40px}
-#go:disabled{opacity:.6;cursor:default}
-#go:not(:disabled):hover{background:rgba(235,230,200,.2)}
-#sHint{font-style:italic;font-size:14px;color:#e4e2d4;text-shadow:0 0 6px #000,0 0 12px #000;min-height:1.2em}
-#mute{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;z-index:6;padding:6px 10px;font-size:18px}
-</style>
+<title>When the Woods Remember</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Unicial:wght@500&family=IM+Fell+English:ital@0;1&display=swap">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="stage">
   <canvas id="cv"></canvas>
   <div id="boy"></div>
+  <canvas id="wleaves"></canvas>
   <div id="vig"></div>
+  <div id="tight"></div>
+  <div id="mood"></div>
   <div id="cap"></div>
-  <div id="dlg"><div class="who"></div><div class="txt"></div><div class="hint">▼</div></div>
-  <div id="choice"><div class="p"><h2>— ESCOLHA —</h2><p>As opções ainda não foram definidas.<br>Cena em fase de teste.</p><button id="again">↻ Reiniciar cena</button></div></div>
+  <div id="dlg"><div class="who"></div><div class="txt"></div><div class="hint">▼</div><div class="tip"></div></div>
+  <div id="choice"><div class="p"><h2 id="chT">— ESCOLHA —</h2><p id="chP"></p><div id="opts"></div><button id="again">↻ Reiniciar cena</button></div></div>
   <div id="fade"></div>
+  <div id="chapter" aria-hidden="true">
+    <div class="ch-num">Capítulo 1</div>
+    <span class="ch-line"></span>
+    <p class="ch-sub">Para onde estamos indo?</p>
+  </div>
   <button id="mute" aria-label="Som">🔊</button>
-  <div id="start"><canvas id="leaves"></canvas><div id="sUi"><button id="go">COMEÇAR</button><div id="sHint">🎧 use fones de ouvido</div></div></div>
+  <div id="start">
+    <canvas id="leaves"></canvas>
+    <div id="sUi">
+      <img id="title" src="img/titulo.webp" alt="When the Woods Remember">
+      <button id="go">COMEÇAR</button>
+      <div id="sHint">🎧 use fones de ouvido</div>
+    </div>
+  </div>
   <div id="load"><div id="jbox"></div><div id="lTxt">CARREGANDO…</div></div>
-  <audio id="bgm" src="audio/trilha.mp3" loop preload="auto"></audio>
+  <audio id="bgm" src="audio/trilha.mp3" loop preload="auto" autoplay playsinline></audio>
 </div>
-<script>
-(()=>{
-const $=s=>document.querySelector(s);
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const cv=$('#cv'),ctx=cv.getContext('2d'),boyEl=$('#boy');
-
-/* ---------- imagens ---------- */
-const pad2=n=>String(n).padStart(2,'0');
-const WALK=[1,2,3,4,5,6,7].map(n=>'walk_0'+n);                 // andando em silêncio
-const TALK=['talk_00','talk_01','talk_02','talk_03','talk_05'];   // andando enquanto a fala está na tela
-const JUMP=Array.from({length:24},(_,i)=>'jump_'+pad2(i));
-const NAMES=['front','front_fala','left',...WALK,...TALK];
-const IMG={},IMGJ={};
-// folga (em px da arte, base 600) abaixo dos pés de cada conjunto de frames
-const PAD={walk:0,talk:5.3,jump:2.2};
-var BG=new Image();var bgReady=new Promise(r=>{BG.onload=r;BG.onerror=r;BG.src='img/cenario.webp'});
-const mk=(n,parent,store)=>new Promise(r=>{const i=new Image();i.onload=r;i.onerror=r;i.src='img/'+n+'.webp';store[n]=i;parent.appendChild(i)});
-const startBg=new Promise(r=>{const i=new Image();i.onload=r;i.onerror=r;i.src='img/inicio.webp'});
-// frames do pulo carregam primeiro (tela de carregamento); o resto em seguida
-const jumpLoaded=Promise.all(JUMP.map(n=>mk(n,$('#jbox'),IMGJ)));
-const loaded=Promise.all([bgReady,startBg,...NAMES.map(n=>mk(n,boyEl,IMG))]);
-
-/* ---------- cenário (imagem, repetida em espelho para andar sem fim) ---------- */
-
-let W=0,H=0,dpr=1,CH=500;
-function resize(){
-  dpr=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
-  cv.width=W*dpr;cv.height=H*dpr;
-  CH=Math.min(H*.62,W*1.4);
-  for(const n of NAMES){const i=IMG[n];if(!i||!i.naturalHeight)continue;
-    i.style.height=(CH*i.naturalHeight/600)+'px';i.style.bottom=(-(PAD[n.split('_')[0]]||0)*CH/600)+'px'}
-  const JH=Math.min(H*.52,W*1.1);
-  for(const n of JUMP){const i=IMGJ[n];if(!i||!i.naturalHeight)continue;
-    i.style.height=(JH*i.naturalHeight/600)+'px';i.style.bottom=(-PAD.jump*JH/600)+'px'}
-  $('#jbox').style.bottom=(H*.3)+'px';
-  boyEl.style.bottom=(H*.1)+'px';
-}
-addEventListener('resize',resize);
-
-/* ---------- estado do menino ---------- */
-let pose='front',scroll=0,speed=0,tSpeed=0,boyX=-999,tgtX=0,frameT=0,lastIdx=-1,walkV=200;
-let cur=null,curSet=null,talking=false;
-function show(el){if(cur===el)return;if(cur)cur.style.display='none';el.style.display='block';cur=el}
-function setPose(p){
-  pose=p;tSpeed=p==='walk'?walkV:0;curSet=null;lastIdx=-1;frameT=0;
-  if(p==='front')show(IMG.front);
-  if(p==='back')show(IMG.left);
-}
-
-let last=0;
-function loop(t){
-  const dt=Math.min(.05,(t-last)/1000||0);last=t;
-  speed+=(tSpeed-speed)*Math.min(1,dt*6);
-  scroll+=speed*dt;
-  if(pose==='walk'&&boyX<tgtX)boyX=Math.min(tgtX,boyX+speed*dt);
-  if(pose==='walk'){
-    const set=talking?TALK:WALK;   // frames de fala só enquanto a fala está na tela
-    if(set!==curSet){curSet=set;frameT=0;lastIdx=-1}
-    frameT+=dt*8;const idx=Math.floor(frameT)%set.length;
-    if(idx!==lastIdx){
-      show(IMG[set[idx]]);
-      if(idx===0||idx===3)stepSnd(.5);lastIdx=idx;
-    }
-  }else if(pose==='front')show(talking?IMG.front_fala:IMG.front);   // de frente: imagem falando só durante a fala
-  boyEl.style.transform=`translateX(${boyX}px) scaleX(${pose==='walk'?-1:1})`;
-  draw();requestAnimationFrame(loop);
-}
-function draw(){
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.fillStyle='#222a22';ctx.fillRect(0,0,W,H);
-  if(!BG.naturalWidth)return;
-  const iw=H*BG.naturalWidth/BG.naturalHeight,o=scroll*.8,m0=Math.floor(o/iw);
-  let x=-(o-m0*iw),m=m0;
-  for(;x<W;x+=iw,m++){
-    if(m%2){ctx.save();ctx.translate(x+iw,0);ctx.scale(-1,1);ctx.drawImage(BG,0,0,iw+1,H);ctx.restore()}
-    else ctx.drawImage(BG,x,0,iw+1,H);
-  }
-}
-
-/* ---------- áudio sintetizado ---------- */
-let ac,master,windG,nb,muted=false;
-function initAudio(){
-  if(ac)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
-  ac=new AC();master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
-  nb=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);const d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-  const src=ac.createBufferSource();src.buffer=nb;src.loop=true;
-  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=480;bp.Q.value=.7;
-  windG=ac.createGain();windG.gain.value=0;src.connect(bp);bp.connect(windG);windG.connect(master);src.start();
-  const l1=ac.createOscillator(),g1=ac.createGain();l1.frequency.value=.13;g1.gain.value=260;l1.connect(g1);g1.connect(bp.frequency);l1.start();
-  const l2=ac.createOscillator(),g2=ac.createGain();l2.frequency.value=.21;g2.gain.value=.05;l2.connect(g2);g2.connect(windG.gain);l2.start();
-}
-function windUp(sec=3){if(!ac)return;windG.gain.setTargetAtTime(.17,ac.currentTime,sec/3)}
-function burst(freq,q,type,vol,dur,off=0,rate=1){
-  if(!ac||muted)return;const t=ac.currentTime+off,s=ac.createBufferSource();s.buffer=nb;s.playbackRate.value=rate;
-  const f=ac.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;
-  const g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+dur);
-  s.connect(f);f.connect(g);g.connect(master);s.start(t,Math.random()*1.5,dur+.05);
-}
-function stepSnd(v=1){burst(2200,.8,'bandpass',.22*v,.2);for(let i=0;i<4;i++)burst(2500+Math.random()*3000,2,'bandpass',.1*v,.04,.02+Math.random()*.16)}
-function crack(){burst(900,3,'bandpass',.22,.07);burst(1400,4,'bandpass',.14,.05,.07);burst(700,3,'bandpass',.1,.09,.18)}
-$('#mute').onclick=e=>{e.stopPropagation();muted=!muted;if(master)master.gain.value=muted?0:.9;e.target.textContent=muted?'🔇':'🔊';bgm.muted=muted};
-
-/* ---------- diálogo / legenda ---------- */
-const dlg=$('#dlg'),cap=$('#cap'),fade=$('#fade');
-let typing=null,pend=null,full='',finFn=null;
-function say(text,who='MENINO'){
-  return new Promise(res=>{
-    dlg.style.display='block';dlg.querySelector('.who').textContent=who;
-    const tx=dlg.querySelector('.txt'),hint=dlg.querySelector('.hint');tx.textContent='';hint.style.display='none';full=text;let i=0;
-    talking=true;typing=setInterval(()=>{i++;tx.textContent=text.slice(0,i);if(i>=text.length)done()},34);
-    function done(){clearInterval(typing);typing=null;tx.textContent=text;hint.style.display='block';pend=()=>{pend=null;dlg.style.display='none';talking=false;res()}}
-    finFn=done;
-  });
-}
-function advance(){
-  if(typing){finFn&&finFn();return}
-  if(pend)pend();
-}
-$('#dlg').addEventListener('click',advance);
-addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='Enter'){e.preventDefault();advance()}});
-async function narr(text,ms,on){cap.textContent=text;cap.classList.add('on');on&&on();await wait(ms);cap.classList.remove('on');await wait(900)}
-
-/* ---------- roteiro: CENA 1 ---------- */
-async function run(){
-  $('#choice').style.display='none';talking=false;
-  fade.style.transition='none';fade.style.opacity=1;void fade.offsetWidth;fade.style.transition='';
-  speed=0;scroll=0;boyX=-CH*.4;tgtX=W*(W<700?.5:.42);setPose('front');
-  await wait(600);
-  await narr('[ O som do vento entre as árvores ]',2600,()=>windUp(3));
-  await narr('[ Galhos estalam ao longe ]',2400,()=>setTimeout(crack,500));
-  await narr('[ Passos lentos sobre folhas secas ]',2200,()=>{for(let i=0;i<4;i++)setTimeout(()=>stepSnd(.35),i*520)});
-  fade.style.opacity=0;setPose('walk');
-  await wait(4200);
-  await say('— ...Alô?');
-  await narr('Silêncio.',2200);
-  await say('— Tem alguém aí?');
-  setPose('front');await wait(3600);                       // olha discretamente para a tela
-  await say('— Ah... que bom. Por um momento, achei que fosse o único perdido aqui.');
-  setPose('walk');await wait(3000);       // continua andando
-  setPose('back');await wait(2800);       // olha para trás, tudo igual
-  setPose('walk');await wait(1600);
-  await say('— Você sabe para onde estamos indo?');
-  setPose('front');await wait(400);
-  $('#choice').style.display='flex';      // ESCOLHA (sem opções por enquanto)
-}
-$('#again').onclick=run;
-
-/* ---------- folhas levadas pelo vento (tela inicial) ---------- */
-const lv=$('#leaves'),lx=lv.getContext('2d');
-const LCOL=['#8a9a4a','#a5a553','#c2a24a','#b9803c','#9c5d32','#6f8a3e','#d1b45a','#7d6b34'];
-let leaves=[],lOn=false,lLast=0,lT=0,lW=0,lH=0,lD=1;
-function lResize(){lD=Math.min(devicePixelRatio||1,2);lW=innerWidth;lH=innerHeight;lv.width=lW*lD;lv.height=lH*lD}
-function newLeaf(init){
-  const z=Math.random(),k=lW<700?.8:1;           // z: profundidade (0 = longe, 1 = perto)
-  return{x:init?Math.random()*lW:-40-Math.random()*lW*.3,y:Math.random()*lH*.95,
-    s:(7+z*11)*k,vx:(50+z*110)*(.8+Math.random()*.4),fy:10+Math.random()*25,
-    ph:Math.random()*6.28,fq:.8+Math.random()*1.4,rot:Math.random()*6.28,
-    spin:(Math.random()-.5)*3.5,flip:Math.random()*6.28,fs:1.5+Math.random()*2.5,
-    a:.5+z*.45,c:LCOL[Math.floor(Math.random()*LCOL.length)]}
-}
-function leavesTick(t){
-  if(!lOn)return;
-  const dt=Math.min(.05,(t-lLast)/1000||0);lLast=t;lT+=dt;
-  const gust=1+.55*Math.sin(lT*.45)+.3*Math.sin(lT*1.25+1);   // rajadas de vento
-  lx.setTransform(lD,0,0,lD,0,0);lx.clearRect(0,0,lW,lH);
-  for(const f of leaves){
-    f.x+=f.vx*Math.max(.25,gust)*dt;
-    f.y+=(Math.sin(lT*f.fq+f.ph)*f.fy+16+gust*6)*dt;
-    f.rot+=f.spin*dt*(.5+gust*.5);f.flip+=f.fs*dt;
-    if(f.x>lW+40||f.y>lH+40){Object.assign(f,newLeaf(false));f.y=Math.random()*lH*.8}
-    lx.save();lx.translate(f.x,f.y);lx.rotate(f.rot);lx.scale(1,Math.max(.25,Math.abs(Math.cos(f.flip))));
-    lx.globalAlpha=f.a;lx.fillStyle=f.c;const s=f.s;
-    lx.beginPath();lx.moveTo(0,-s);lx.bezierCurveTo(s*.75,-s*.5,s*.6,s*.55,0,s);lx.bezierCurveTo(-s*.6,s*.55,-s*.75,-s*.5,0,-s);lx.fill();
-    lx.strokeStyle='rgba(30,25,10,.45)';lx.lineWidth=.8;lx.beginPath();lx.moveTo(0,-s);lx.lineTo(0,s*1.25);lx.stroke();
-    lx.restore();
-  }
-  requestAnimationFrame(leavesTick);
-}
-function startLeaves(){
-  lResize();const n=Math.round(Math.min(60,22+lW/32));
-  leaves=Array.from({length:n},()=>newLeaf(true));
-  lOn=true;lLast=performance.now();requestAnimationFrame(leavesTick);
-}
-addEventListener('resize',()=>{if(lOn)lResize()});
-
-/* ---------- tela de carregamento (pulo) + tela inicial + trilha ---------- */
-const bgm=$('#bgm');bgm.volume=.75;
-let started=false,jTimer=null,jc=null;
-function playMusic(){if(started)return;const p=bgm.play();if(p&&p.then)p.then(()=>{$('#sHint').textContent='🎧 use fones de ouvido'}).catch(()=>{$('#sHint').textContent='🔈 toque na tela para ativar a trilha'})}
-const JSEQ=[...JUMP,JUMP[23],JUMP[23],JUMP[23]];
-function startJump(){let k=0;jTimer=setInterval(()=>{const el=IMGJ[JSEQ[k++%JSEQ.length]];if(jc===el)return;if(jc)jc.style.display='none';el.style.display='block';jc=el},83)}
-function musicOut(){const t=setInterval(()=>{bgm.volume=Math.max(0,bgm.volume-.04);if(bgm.volume<=0){clearInterval(t);bgm.pause()}},70)}
-const firstTouch=()=>{if(!started&&bgm.paused)playMusic()};
-addEventListener('pointerdown',firstTouch);addEventListener('keydown',firstTouch);
-playMusic();
-
-jumpLoaded.then(()=>{resize();startJump()});
-const go=$('#go');
-go.onclick=()=>{
-  started=true;initAudio();if(ac&&ac.state==='suspended')ac.resume();
-  lOn=false;musicOut();
-  $('#start').style.display='none';run();
-};
-// o pulo aparece por pelo menos ~um ciclo completo, mesmo se tudo carregar rápido
-Promise.all([loaded,jumpLoaded,wait(2300)]).then(()=>{
-  resize();requestAnimationFrame(loop);startLeaves();
-  const ld=$('#load');ld.style.opacity=0;ld.style.pointerEvents='none';
-  setTimeout(()=>{ld.style.display='none';clearInterval(jTimer)},750);
-});
-})();
-</script>
+<script src="js/utils.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/leaves.js"></script>
+<script src="js/wildlife.js"></script>
+<script src="js/dialogue.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/story.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
