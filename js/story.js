@@ -94,7 +94,6 @@ async function run(fromStart) {
   await say("— Eu venho de um lugar chamado Vilarejo das Cinzas. Não é um nome muito bonito, eu sei.");
   await say("— Antes, chamavam de Vale Dourado. Dizem que, naquela época, os campos eram tão amarelos que pareciam pedaços do sol espalhados pela terra.");
   setPose("sadback");
-  await narr("Ele olha para a esquerda, triste.", 2600, moodSad);
   await say("— E então tudo mudou…");
   await say("— Eu nasci depois da última colheita boa. Desde então, a terra só nos deu raízes pequenas, grãos podres e promessas de que o próximo ano seria melhor.");
   await say("— … talvez a causa de todo esse sofrimento tenha sido meu nascimento.");
@@ -104,7 +103,6 @@ async function run(fromStart) {
   await say("— Não é a barriga doendo. A gente acaba se acostumando com ela.");
   await say("— É quando sua mãe diz que já comeu, mas você sabe que ela está mentindo.");
   setPose("sad");
-  await narr("Ele permanece em silêncio por alguns passos.", 3400);
   await say("— Uma noite antes de eu sair do meu vilarejo, ela dividiu uma batata em três pedaços. Deu o maior para mim e disse que não estava com fome.");
   await say("— Eu fingi acreditar. Acho que ela também fingiu acreditar que eu acreditei.");
   await say("— É estranho, não é? Às vezes, a gente ama tanto alguém que acaba ajudando essa pessoa a mentir para nós mesmos…");
