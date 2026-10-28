@@ -93,6 +93,7 @@ async function run(fromStart) {
   await say("— Eu venho de um lugar chamado Vilarejo das Cinzas. Não é um nome muito bonito, eu sei.");
   await say("— Antes, chamavam de Vale Dourado. Dizem que, naquela época, os campos eram tão amarelos que pareciam pedaços do sol espalhados pela terra.");
   setPose("sadback");
+  moodSad();
   await say("— E então tudo mudou…");
   await say("— Eu nasci depois da última colheita boa. Desde então, a terra só nos deu raízes pequenas, grãos podres e promessas de que o próximo ano seria melhor.");
   await say("— … talvez a causa de todo esse sofrimento tenha sido meu nascimento.");
