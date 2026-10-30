@@ -1,5 +1,15 @@
 const dlg = $("#dlg"), cap = $("#cap"), fade = $("#fade"), chapter = $("#chapter");
 let typing = null, pend = null, finFn = null, curWho = "MENINO", guided = false;
+let autoT = null, autoLen = 0;
+// No modo acelerado, a fala avança sozinha depois de um instante (as escolhas NUNCA são puladas)
+function scheduleAuto() {
+  clearTimeout(autoT);
+  if (gameSpeed <= 1 || !pend || typing) return;
+  const p = pend;
+  autoT = setTimeout(() => {
+    if (pend === p && gameSpeed > 1) p();
+  }, Math.min(1800, 350 + autoLen * 5));
+}
 const tip = dlg.querySelector(".tip");
 tip.textContent = matchMedia("(hover: hover) and (pointer: fine)").matches
   ? "Clique no texto ou aperte Espaço para continuar"
@@ -11,10 +21,15 @@ function say(text, who = curWho, swap) {
     const tx = dlg.querySelector(".txt"), hint = dlg.querySelector(".hint");
     tx.textContent = "";
     hint.style.display = "none";
-    let i = 0;
+    let i = 0, acc = 0, t0 = performance.now();
     talking = true;
     typing = setInterval(() => {
-      i++;
+      const now = performance.now();
+      acc += (now - t0) * gameSpeed;
+      t0 = now;
+      const n = Math.floor(acc / 34);
+      if (n <= i) return;
+      i = n;
       tx.textContent = text.slice(0, i);
       if (swap && i >= swap.at) {
         dlg.querySelector(".who").textContent = swap.to;
@@ -23,7 +38,7 @@ function say(text, who = curWho, swap) {
         f && f();
       }
       if (i >= text.length) done();
-    }, 34);
+    }, 17);
     function done() {
       clearInterval(typing);
       typing = null;
@@ -38,10 +53,13 @@ function say(text, who = curWho, swap) {
       if (!guided) dlg.classList.add("guide");
       pend = () => {
         pend = null;
+        clearTimeout(autoT);
         dlg.style.display = "none";
         talking = false;
         res();
       };
+      autoLen = text.length;
+      scheduleAuto();
     }
     finFn = done;
   });

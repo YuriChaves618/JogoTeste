@@ -21,6 +21,7 @@
   <div id="vig"></div>
   <div id="tight"></div>
   <div id="mood"></div>
+  <div id="night"></div>
   <div id="cap"></div>
   <div id="dlg"><div class="who"></div><div class="txt"></div><div class="hint">▼</div><div class="tip"></div></div>
   <div id="choice"><div class="p"><h2 id="chT">— ESCOLHA —</h2><p id="chP"></p><div id="opts"></div><button id="again">↻ Reiniciar cena</button></div></div>
@@ -30,9 +31,11 @@
     <span class="ch-line"></span>
     <p class="ch-sub">Para onde estamos indo?</p>
   </div>
-  <button id="mute" aria-label="Som">🔊</button>
+  <button id="mute" aria-label="Som"><img id="muteImg" src="img/btn_audio_on.webp" alt="" draggable="false"></button>
+  <button id="ff" aria-label="Acelerar o jogo" aria-pressed="false" title="Acelerar / voltar ao normal"><img src="img/btn_ff.webp" alt="" draggable="false"></button>
   <div id="start">
     <canvas id="leaves"></canvas>
+    <img id="fire" src="img/fogueira.webp" alt="" draggable="false">
     <div id="sUi">
       <img id="title" src="img/titulo.webp" alt="When the Woods Remember">
       <button id="go">COMEÇAR</button>
@@ -50,6 +53,7 @@
 <script src="js/dialogue.js"></script>
 <script src="js/scene.js"></script>
 <script src="js/story.js"></script>
+<script src="js/fastforward.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

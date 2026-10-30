@@ -22,6 +22,10 @@ body {
   }
 }
 
+:root {
+  --spd: 1;
+}
+
 button {
   font: inherit;
   color: #e9e6da;
@@ -75,7 +79,8 @@ canvas {
 }
 
 #tight,
-#mood {
+#mood,
+#night {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -84,16 +89,23 @@ canvas {
 
 #tight {
   background: radial-gradient(ellipse at 50% 55%, rgba(0, 0, 0, 0) 34%, rgba(4, 7, 4, 0.62) 100%);
-  transition: opacity 4s ease;
+  transition: opacity calc(4s / var(--spd)) ease;
 }
 
 #mood {
   background: linear-gradient(rgba(22, 30, 44, 0.3), rgba(18, 24, 34, 0.22));
-  transition: opacity 6s ease;
+  transition: opacity calc(6s / var(--spd)) ease;
+}
+
+#night {
+  background: linear-gradient(rgba(10, 16, 36, 0.38), rgba(8, 12, 28, 0.3));
+  mix-blend-mode: multiply;
+  transition: opacity calc(22s / var(--spd)) ease;
 }
 
 #tight.on,
-#mood.on {
+#mood.on,
+#night.on {
   opacity: 1;
 }
 
@@ -102,7 +114,7 @@ canvas {
   inset: 0;
   background: #000;
   opacity: 1;
-  transition: opacity 2.5s ease;
+  transition: opacity calc(2.5s / var(--spd)) ease;
   pointer-events: none;
 }
 
@@ -118,7 +130,7 @@ canvas {
   text-align: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 1.6s ease;
+  transition: opacity calc(1.6s / var(--spd)) ease;
 }
 
 #chapter.on {
@@ -135,7 +147,7 @@ canvas {
   text-shadow: 0 0 22px rgba(209, 160, 112, 0.35);
   transform: translateY(10px);
   filter: blur(6px);
-  transition: transform 2.2s ease, filter 2.2s ease;
+  transition: transform calc(2.2s / var(--spd)) ease, filter calc(2.2s / var(--spd)) ease;
 }
 
 .ch-line {
@@ -144,7 +156,7 @@ canvas {
   height: 1px;
   background: linear-gradient(90deg, transparent, #d1a070, transparent);
   transform: scaleX(0);
-  transition: transform 1.8s ease;
+  transition: transform calc(1.8s / var(--spd)) ease;
 }
 
 .ch-sub {
@@ -154,7 +166,7 @@ canvas {
   letter-spacing: 0.06em;
   color: #d9d3bb;
   opacity: 0;
-  transition: opacity 1.8s ease;
+  transition: opacity calc(1.8s / var(--spd)) ease;
 }
 
 #chapter.on .ch-num {
@@ -164,12 +176,12 @@ canvas {
 
 #chapter.on .ch-line {
   transform: scaleX(1);
-  transition-delay: 0.7s;
+  transition-delay: calc(0.7s / var(--spd));
 }
 
 #chapter.on .ch-sub {
   opacity: 1;
-  transition-delay: 1.5s;
+  transition-delay: calc(1.5s / var(--spd));
 }
 
 #cap {
@@ -184,7 +196,7 @@ canvas {
   color: #e4e2d4;
   text-shadow: 0 0 6px #000, 0 0 14px #000, 0 1px 2px #000;
   opacity: 0;
-  transition: opacity 1s;
+  transition: opacity calc(1s / var(--spd));
   padding: 0 6%;
   pointer-events: none;
 }
@@ -320,13 +332,61 @@ canvas {
   opacity: 0.9;
 }
 
-#mute {
+#mute,
+#ff {
   position: absolute;
   top: max(12px, env(safe-area-inset-top));
-  right: 12px;
   z-index: 6;
-  padding: 6px 10px;
-  font-size: 18px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transition: transform 0.15s ease;
+}
+
+#mute {
+  right: 12px;
+}
+
+#ff {
+  left: 12px;
+  display: none;
+}
+
+#mute img,
+#ff img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+}
+
+#mute:hover,
+#ff:hover {
+  background: transparent;
+  transform: scale(1.08);
+}
+
+#mute:active,
+#ff:active {
+  transform: scale(0.94);
+}
+
+#ff.on img {
+  animation: ffpulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ffpulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 3px rgba(255, 190, 110, 0.6)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+  }
+  50% {
+    filter: drop-shadow(0 0 11px rgba(255, 190, 110, 1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+  }
 }
 
 #start {
@@ -354,6 +414,18 @@ canvas {
 
 #leaves {
   z-index: 1;
+}
+
+#fire {
+  position: absolute;
+  left: 50%;
+  bottom: 2vh;
+  transform: translateX(-50%);
+  width: min(30vw, 280px, 33vh);
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  filter: brightness(0.88) drop-shadow(0 7px 7px rgba(5, 8, 5, 0.5));
 }
 
 #sUi {

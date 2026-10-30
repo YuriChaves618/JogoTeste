@@ -1,5 +1,33 @@
 let wild = false, bT = 0, sT = 0;
-const birds = [], sqs = [];
+const birds = [], sqs = [], owls = [];
+let owlsOn = false, oT = 0, hT = 0;
+function startOwls() {
+  owlsOn = true;
+  oT = 2.5;
+  hT = 1.2;
+}
+function stopOwls() {
+  owlsOn = false;
+}
+function spawnOwl() {
+  const dir = Math.random() < 0.5 ? 1 : -1, z = Math.random(), s = H * (0.045 + z * 0.04);
+  const y0 = H * (0.1 + Math.random() * 0.28);
+  owls.push({
+    dir, s, z,
+    x: dir > 0 ? -s * 2 : W + s * 2,
+    y0, y: y0,
+    vx: (55 + Math.random() * 45) * (H / 800) * (0.8 + z * 0.5),
+    fi: Math.random() * 16,
+    fr: 10 + Math.random() * 2,
+    t: Math.random() * 6,
+    wf: 0.5 + Math.random() * 0.5,
+    wa: s * (0.5 + Math.random() * 0.6),
+    glide: Math.random() < 0.4 ? 1 : 0,
+    gT: 1.2 + Math.random() * 2,
+    a: 0.8,
+    k: 1
+  });
+}
 function startWild() {
   wild = true;
   bT = 0.8;
@@ -37,6 +65,8 @@ function spawnSquirrel() {
     y: H * (0.745 + z * 0.13),
     vx: s * (4 + Math.random() * 1.6),
     ph: 0,
+    fi: 0,
+    lst: "run",
     st: "run",
     tp: 0,
     paused: Math.random() < 0.65,
@@ -47,6 +77,33 @@ function spawnSquirrel() {
 }
 function wildTick(dt) {
   const par = speed * 0.8 * dt;
+  if (owlsOn) {
+    oT -= dt;
+    if (oT <= 0 && owls.length < 1) {
+      spawnOwl();
+      if (Math.random() < 0.7) setTimeout(() => hoot(0.55, 0.3 + Math.random() * 0.4), 400 + Math.random() * 600);
+      oT = 12 + Math.random() * 8;
+    }
+    hT -= dt;
+    if (hT <= 0) {
+      hoot(0.5, 0.55 + Math.random() * 0.4);
+      hT = 7 + Math.random() * 8;
+    }
+  }
+  for (let i = owls.length - 1; i >= 0; i--) {
+    const o = owls[i];
+    o.t += dt;
+    o.gT -= dt;
+    if (o.gT <= 0) {
+      o.glide = o.glide ? 0 : 1;
+      o.gT = o.glide ? 1 + Math.random() * 1.6 : 1.4 + Math.random() * 2.2;
+    }
+    o.fi += dt * o.fr;
+    o.x += o.dir * o.vx * dt - par * 0.3;
+    o.y = o.y0 + Math.sin(o.t * o.wf) * o.wa;
+    if (!owlsOn) o.k = Math.max(0, o.k - dt * 0.8);
+    if (o.k <= 0.01 || o.x < -o.s * 4 || o.x > W + o.s * 4) owls.splice(i, 1);
+  }
   if (wild) {
     bT -= dt;
     if (bT <= 0) {
@@ -70,9 +127,14 @@ function wildTick(dt) {
   }
   for (let i = sqs.length - 1; i >= 0; i--) {
     const q = sqs[i];
+    if (q.lst !== q.st) {
+      q.lst = q.st;
+      q.fi = 0;
+    }
+    if (q.st !== "run") q.fi += dt * 5;
     if (q.st === "run") {
       q.x += q.dir * q.vx * dt;
-      q.ph += dt * q.vx / q.s * 2.1;
+      q.fi += dt * 13;
       if (q.paused && (q.dir > 0 && q.x > q.px || q.dir < 0 && q.x < q.px)) {
         q.st = "pause";
         q.tp = 0.9 + Math.random() * 0.9;
@@ -111,162 +173,39 @@ function drawBird(b) {
   ctx.fill();
   ctx.restore();
 }
+const SQ_IDLE = [11, 12, 13, 14, 15, 16, 15, 14, 13, 12];
 function drawSquirrel(q) {
-  const run = q.st === "run", ph = q.ph, now = performance.now() / 1e3;
-  const C = { fur: "#7a5233", back: "#58391f", belly: "#cbb18a", tail: "#8c5c34", tailT: "#c49a62", dark: "#2c1d12", ear: "#3a2517", line: "rgba(28,18,10,.55)" };
+  const run = q.st === "run";
+  const fr = run ? Math.floor(q.fi) % 11 : SQ_IDLE[Math.floor(q.fi) % SQ_IDLE.length];
+  const img = ESQF[fr];
+  if (!img || !img.naturalWidth) return;
+  const hh = q.s * 1.5, ww = hh * img.naturalWidth / img.naturalHeight;
   ctx.save();
   ctx.translate(q.x, q.y);
-  ctx.scale(q.dir * q.s, q.s);
   ctx.globalAlpha = q.a * q.k;
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  const S = Math.sin(ph), Cc = Math.cos(ph);
-  const hop = run ? Math.max(0, S) * 0.2 : 0;
-  ctx.fillStyle = "rgba(8,12,8," + (0.3 - hop * 0.5) + ")";
+  ctx.fillStyle = "rgba(8,12,8,.28)";
   ctx.beginPath();
-  ctx.ellipse(run ? 0 : -0.05, 0, 0.55 - hop * 0.6, 0.06, 0, 0, 6.283);
+  ctx.ellipse(0, 0, ww * 0.34, hh * 0.05, 0, 0, 6.283);
   ctx.fill();
-  const leg = (x0, y0, x1, y1, w) => {
-    ctx.strokeStyle = C.back;
-    ctx.lineWidth = w;
-    ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.lineTo(x1, y1);
-    ctx.stroke();
-  };
-  const head = (hx, hy, tilt) => {
-    ctx.save();
-    ctx.translate(hx, hy);
-    ctx.rotate(tilt);
-    ctx.fillStyle = C.ear;
-    ctx.beginPath();
-    ctx.moveTo(-0.1, -0.1);
-    ctx.quadraticCurveTo(-0.13, -0.3, -0.07, -0.42);
-    ctx.quadraticCurveTo(0.02, -0.3, 0.06, -0.14);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = C.fur;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 0.19, 0.165, 0, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = C.belly;
-    ctx.beginPath();
-    ctx.ellipse(0.16, 0.045, 0.115, 0.082, 0.18, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = C.dark;
-    ctx.beginPath();
-    ctx.arc(0.255, 0.02, 0.024, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = C.dark;
-    ctx.beginPath();
-    ctx.arc(0.07, -0.03, 0.034, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,250,235,.9)";
-    ctx.beginPath();
-    ctx.arc(0.08, -0.042, 0.011, 0, 6.283);
-    ctx.fill();
-    ctx.restore();
-  };
-  const tail = (bx, by, wave, up) => {
-    const g = ctx.createLinearGradient(bx, by, bx - 0.5, by - 1.1 * up);
-    g.addColorStop(0, C.tail);
-    g.addColorStop(1, C.tailT);
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(bx, by);
-    ctx.bezierCurveTo(bx - 0.4, by + 0.02 + wave * 0.3, bx - 0.62 - wave, by - 0.5 * up, bx - 0.4 - wave * 0.8, by - 1 * up);
-    ctx.bezierCurveTo(bx - 0.28 - wave * 0.5, by - 1.28 * up, bx - 0.02, by - 1.16 * up, bx - 0.02, by - 0.86 * up);
-    ctx.bezierCurveTo(bx - 0, by - 0.6 * up, bx + 0.04, by - 0.34 * up, bx + 0.14, by - 0.12);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "rgba(60,36,18,.5)";
-    ctx.lineWidth = 0.022;
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(224,190,140,.45)";
-    ctx.lineWidth = 0.03;
-    ctx.beginPath();
-    ctx.moveTo(bx - 0.12, by - 0.1);
-    ctx.bezierCurveTo(bx - 0.32, by - 0.18 * up, bx - 0.4 - wave, by - 0.62 * up, bx - 0.26 - wave * 0.7, by - 1.02 * up);
-    ctx.stroke();
-  };
-  if (run) {
-    const ext = Cc;
-    ctx.translate(0, -hop);
-    const wave = Math.sin(ph - 0.9) * 0.1;
-    tail(-0.4, -0.46, wave, 0.85);
-    leg(-0.28, -0.28, -0.34 - 0.3 * ext, -0.03 - Math.max(0, -S) * 0.12, 0.085);
-    leg(0.3, -0.3, 0.34 + 0.3 * ext, -0.03 - Math.max(0, S) * 0.12, 0.07);
-    ctx.save();
-    ctx.rotate(-0.1 * ext);
-    ctx.fillStyle = C.fur;
-    ctx.beginPath();
-    ctx.moveTo(-0.5, -0.3);
-    ctx.bezierCurveTo(-0.54, -0.66, -0.1, -0.76, 0.2, -0.66);
-    ctx.bezierCurveTo(0.44, -0.6, 0.56, -0.46, 0.5, -0.32);
-    ctx.bezierCurveTo(0.42, -0.16, 0.1, -0.12, -0.16, -0.16);
-    ctx.bezierCurveTo(-0.36, -0.17, -0.5, -0.18, -0.5, -0.3);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = C.line;
-    ctx.lineWidth = 0.02;
-    ctx.stroke();
-    ctx.fillStyle = "rgba(70,44,24,.55)";
-    ctx.beginPath();
-    ctx.moveTo(-0.46, -0.4);
-    ctx.bezierCurveTo(-0.46, -0.66, -0.1, -0.74, 0.2, -0.64);
-    ctx.bezierCurveTo(0, -0.52, -0.3, -0.44, -0.46, -0.4);
-    ctx.fill();
-    ctx.fillStyle = C.belly;
-    ctx.beginPath();
-    ctx.ellipse(0.3, -0.25, 0.2, 0.075, 0.12, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = C.back;
-    ctx.beginPath();
-    ctx.ellipse(-0.3, -0.3, 0.2, 0.2, 0, 0, 6.283);
-    ctx.fill();
-    ctx.restore();
-    head(0.5, -0.56, -0.06 * ext);
-    leg(-0.18, -0.24, -0.18 + 0.3 * ext, -0.03 - Math.max(0, S) * 0.12, 0.09);
-    leg(0.38, -0.26, 0.42 - 0.3 * ext, -0.03 - Math.max(0, -S) * 0.12, 0.075);
-  } else {
-    const nib = Math.sin(now * 14) * 0.012, sway = Math.sin(now * 1.6) * 0.08;
-    tail(-0.26, -0.2, sway, 1.15);
-    ctx.fillStyle = C.back;
-    ctx.beginPath();
-    ctx.ellipse(-0.1, -0.2, 0.3, 0.2, 0, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = C.fur;
-    ctx.beginPath();
-    ctx.moveTo(-0.22, -0.2);
-    ctx.bezierCurveTo(-0.3, -0.55, -0.12, -0.86, 0.1, -0.9);
-    ctx.bezierCurveTo(0.3, -0.9, 0.36, -0.6, 0.3, -0.3);
-    ctx.bezierCurveTo(0.26, -0.14, 0.02, -0.1, -0.22, -0.2);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = C.line;
-    ctx.lineWidth = 0.02;
-    ctx.stroke();
-    ctx.fillStyle = C.belly;
-    ctx.beginPath();
-    ctx.ellipse(0.22, -0.45, 0.1, 0.24, 0.08, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = C.back;
-    ctx.beginPath();
-    ctx.ellipse(0.12, -0.04, 0.2, 0.055, 0, 0, 6.283);
-    ctx.fill();
-    head(0.17, -0.98 + nib, 0.1 + nib * 2);
-    ctx.fillStyle = C.back;
-    ctx.beginPath();
-    ctx.ellipse(0.3, -0.8 + nib * 3, 0.055, 0.04, 0.4, 0, 6.283);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(0.24, -0.76 - nib * 3, 0.05, 0.038, 0.2, 0, 6.283);
-    ctx.fill();
-  }
+  ctx.scale(q.dir > 0 ? -1 : 1, 1);
+  ctx.drawImage(img, -ww / 2, -hh, ww, hh);
+  ctx.restore();
+}
+function drawOwl(o) {
+  const img = OWLF[Math.floor(o.fi) % OWLF.length];
+  if (!img || !img.naturalWidth) return;
+  const ww = o.s * 2.5, hh = ww * img.naturalHeight / img.naturalWidth;
+  ctx.save();
+  ctx.translate(o.x, o.y);
+  ctx.rotate(Math.sin(o.t * o.wf) * 0.05 * o.dir);
+  ctx.scale(o.dir > 0 ? 1 : -1, 1);
+  ctx.globalAlpha = o.a * o.k * Math.min(1, 0.25 + duskMix * 1.4);
+  ctx.drawImage(img, -ww / 2, -hh / 2, ww, hh);
   ctx.restore();
 }
 function drawWild() {
-  if (!birds.length && !sqs.length) return;
+  if (!birds.length && !sqs.length && !owls.length) return;
+  for (const o of owls) drawOwl(o);
   for (const q of sqs) drawSquirrel(q);
   for (const b of birds) drawBird(b);
   ctx.globalAlpha = 1;

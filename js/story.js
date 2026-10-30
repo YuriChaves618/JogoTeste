@@ -4,6 +4,14 @@ function resetScene(keepMusic) {
   wild = false;
   birds.length = 0;
   sqs.length = 0;
+  owls.length = 0;
+  owlsOn = false;
+  duskGo = false;
+  duskMix = 0;
+  duskAnchor = null;
+  nightGo = false;
+  nightMix = 0;
+  noTrans($("#night"), () => $("#night").classList.remove("on"));
   sceneLeaves.stop(true);
   noTrans($("#tight"), () => $("#tight").classList.remove("on"));
   noTrans($("#mood"), () => $("#mood").classList.remove("on"));
@@ -12,6 +20,7 @@ function resetScene(keepMusic) {
   if (!keepMusic) musicStop();
   if (ac) windG.gain.setTargetAtTime(0, ac.currentTime, 0.1);
   clearInterval(typing);
+  clearTimeout(autoT);
   typing = null;
   pend = null;
   finFn = null;
@@ -25,7 +34,16 @@ function moodSad() {
   windTo(0.13, 5);
 }
 const OPT1 = ["“Não faço ideia. Você está perdido também?”", "“Como conseguiu se perder tão rápido?”", "Ficar em silêncio e observar o menino."];
-const OPT2 = ["“Mas por que você fugiu? Sua mãe deve estar preocupada.”", "“Sinto muito. Você não deveria ter passado por isso.”", "“Por que ninguém tentou encontrar uma solução antes?”"];
+const OPT2 = ["“Você está fazendo tudo isso pela sua mãe?”", "“Sinto muito. Você não deveria ter passado por isso.”", "“Por que ninguém tentou encontrar uma solução antes?”"];
+const OPT3 = ["“Você não tem medo de encontrar essa fera?”", "“E se as histórias sobre ela forem mentiras?”", "“Você não precisa provar que é corajoso para mim.”"];
+const RESP2 = [
+  [
+    "— Faço por ela, por meus irmãos e por aqueles que virão… minha mãe e meus irmãos são a única coisa que me restou.",
+    "— Meu pai e meu irmão mais velho foram enviados para a guerra e meu Luke… meu tão amado Luke morreu de fome antes de eu partir… nunca sobrava comida para o cachorro…"
+  ],
+  ["— Desculpe… Não deveria ter te contado essa história triste… estou há tanto tempo sozinho que acabei falando demais…"],
+  ["— Todos os homens estão na guerra faz anos e as mulheres trabalharam duro para manter todos vivos…"]
+];
 const unq = (t) => t.replace(/[“”]/g, "");
 async function run(fromStart) {
   resetScene(fromStart);
@@ -43,9 +61,9 @@ async function run(fromStart) {
   await wait(600);
   await chapterCard();
   await narr("[ O som do vento entre as árvores ]", 2600, () => windUp(3));
-  await narr("[ Galhos estalam ao longe ]", 2400, () => setTimeout(crack, 500));
+  await narr("[ Galhos estalam ao longe ]", 2400, () => after(crack, 500));
   await narr("[ Passos lentos sobre folhas secas ]", 2200, () => {
-    for (let i = 0; i < 4; i++) setTimeout(() => stepSnd(0.35), i * 520);
+    for (let i = 0; i < 4; i++) after(() => stepSnd(0.35), i * 520);
   });
   fade.style.opacity = 0;
   setPose("walk");
@@ -106,10 +124,72 @@ async function run(fromStart) {
   await say("— Uma noite antes de eu sair do meu vilarejo, ela dividiu uma batata em três pedaços. Deu o maior para mim e disse que não estava com fome.");
   await say("— Eu fingi acreditar. Acho que ela também fingiu acreditar que eu acreditei.");
   await say("— É estranho, não é? Às vezes, a gente ama tanto alguém que acaba ajudando essa pessoa a mentir para nós mesmos…");
-  await wait(600);
+  setPose("sadback");
+  musicOut(11);
+  windTo(0.17, 3);
+  for (let i = 0; i < 3; i++) after(() => stepSnd(0.3), 400 + i * 620);
+  await wait(2600);
   const c2 = await choose(OPT2);
   choices.push(c2);
   await narr("— " + unq(OPT2[c2]), 2600);
+  for (const l of RESP2[c2]) await say(l);
+  setPose("tears");
+  after(sniffle, 500);
+  await narr("Finn enxuga suas lágrimas.", 2800);
+  setPose("walk");
+  await wait(2400);
+  await say("— Por isso eu decidi ir atrás do sábio da floresta. Se existe alguém que sabe como resolver o problema das plantações, é ele...");
+  await say("— É minha única esperança.");
+  await narr("", 2200);
+  await say("— Ah, é verdade... Acho que ainda não te contei por que vim sozinho.");
+  await say("— Com a guerra acontecendo e os soldados alemães invadindo tudo, ninguém mais tem coragem de sair do vilarejo.");
+  await say("— E os poucos que se arriscaram a entrar nesta floresta... voltaram contando histórias estranhas.");
+  tSpeed = walkV * 0.55;
+  await narr("Finn diminui o passo.", 2400);
+  await say("— Dizem que existe uma fera vivendo por aqui.");
+  await narr("[ Um galho estala ao longe ]", 2400, () => after(crack, 500));
+  setPose("front");
+  await narr("Finn para por um instante.", 2400);
+  await say("— Ninguém sabe ao certo o que ela é...");
+  await say("— Alguns dizem que tem o corpo de um lobo... e o rosto de um homem.");
+  await say("— Outros juram que ela nem sequer tem rosto.");
+  await narr("", 2200);
+  await say("— Mas são só histórias... certo?");
+  await say("— Meu vizinho, o senhor Ambrósio, costumava dizer que a fera conseguia imitar a voz de alguém que você ama.");
+  await narr("Finn fica em silêncio por um instante.", 2800);
+  await say("— Ele também dizia que ela não precisava correr atrás de ninguém...");
+  await say("— Bastava chamar pelo seu nome.");
+  await say("— Ou cantar aquela melodia triste.");
+  setPose("walk");
+  duskGo = true;
+  nightGo = true;
+  $("#night").classList.add("on");
+  startOwls();
+  windTo(0.19, 3);
+  await wait(2500);
+  await say("— O senhor Ambrósio desapareceu há seis anos.");
+  await narr("O vento atravessa os galhos.", 3800, () => windTo(0.22, 2));
+  await say("— Depois disso, ninguém mais se atrevia a sair do vilarejo depois do pôr do sol.");
+  await say("— Com o tempo, as pessoas começaram a ter medo até mesmo da luz do dia.");
+  await say("— As carroças pararam de chegar. Os comerciantes deixaram de aparecer... e as estradas foram tomadas pelo mato.");
+  await say("— E quando a fome chegou...");
+  await narr("", 2200);
+  await say("— As pessoas começaram a trancar as portas umas para as outras.");
+  while (!nightArrived()) await wait(100);
+  await wait(800);
+  setPose("sadfront");
+  await wait(1400);
+  await say("— Eu sei o que você deve estar pensando...");
+  await say("— Que sou um idiota por ter vindo até aqui.");
+  await say("— Talvez eu seja.");
+  await narr("Finn abaixa a cabeça e observa as próprias mãos.", 2800);
+  await say("— Mas ficar lá também dava medo.");
+  await say("— Toda manhã, eu acordava pensando em quem seria o próximo a não conseguir se levantar da cama.");
+  await say("— E eu não queria descobrir.");
+  await wait(600);
+  const c3 = await choose(OPT3);
+  choices.push(c3);
+  await narr("— " + unq(OPT3[c3]), 2600);
   endCard();
 }
 $("#again").onclick = () => run();

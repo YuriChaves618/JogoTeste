@@ -15,6 +15,7 @@ const NAMES = [
   "tleft_fala",
   "tfront",
   "tfront_fala",
+  "enxuga",
   ...WALK,
   ...TALK,
   ...new Set([...SAD_FALA, ...SAD_MUDO])
@@ -24,6 +25,8 @@ const IMG = {};
 const IMGJ = {};
 const BG = new Image();
 const BG2 = new Image();
+const BG3 = new Image();
+const BG4 = new Image();
 const preload = (img, src) => new Promise((r) => {
   img.onload = r;
   img.onerror = r;
@@ -35,6 +38,12 @@ const mk = (n, parent, store) => {
   parent.appendChild(i);
   return preload(i, "img/" + n + ".webp");
 };
+const OWLF = Array.from({ length: 16 }, () => new Image());
+const ESQF = Array.from({ length: 17 }, () => new Image());
+const animLoaded = Promise.all([
+  ...OWLF.map((im, i) => preload(im, "img/owl_" + pad(i) + ".webp")),
+  ...ESQF.map((im, i) => preload(im, "img/esq_" + pad(i) + ".webp"))
+]);
 const fontsReady = document.fonts ? Promise.race([
   Promise.all([
     document.fonts.load('500 1em "Cormorant Unicial"'),
@@ -47,7 +56,11 @@ const jumpLoaded = Promise.all(JUMP.map((n) => mk(n, $("#jbox"), IMGJ)));
 const loaded = Promise.all([
   preload(BG, "img/cenario.webp"),
   preload(BG2, "img/clareira.webp"),
+  preload(BG3, "img/transicao.webp"),
+  preload(BG4, "img/noite.webp"),
+  animLoaded,
   preload(new Image(), "img/inicio.webp"),
+  preload(new Image(), "img/fogueira.webp"),
   fontsReady,
   ...NAMES.map((n) => mk(n, boyEl, IMG))
 ]);

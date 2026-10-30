@@ -40,10 +40,10 @@ function initAudio() {
   l2.start();
 }
 function windUp(sec = 3) {
-  if (ac) windG.gain.setTargetAtTime(0.17, ac.currentTime, sec / 3);
+  if (ac) windG.gain.setTargetAtTime(0.17, ac.currentTime, sec / 3 / gameSpeed);
 }
 function windTo(v, sec = 3) {
-  if (ac) windG.gain.setTargetAtTime(v, ac.currentTime, sec / 3);
+  if (ac) windG.gain.setTargetAtTime(v, ac.currentTime, sec / 3 / gameSpeed);
 }
 function chirp() {
   if (!ac || muted || !wild) return;
@@ -85,19 +85,45 @@ function stepSnd(v = 1) {
   for (let i = 0; i < 4; i++) burst(2500 + Math.random() * 3e3, 2, "bandpass", 0.1 * v, 0.04, 0.02 + Math.random() * 0.16);
 }
 function crack() {
-  burst(900, 3, "bandpass", 0.22, 0.07);
-  burst(1400, 4, "bandpass", 0.14, 0.05, 0.07);
-  burst(700, 3, "bandpass", 0.1, 0.09, 0.18);
+  playFx("audio/galho.mp3", 0.85);
 }
-function musicOut() {
+let owlEl = null;
+function playFx(src, vol) {
+  if (muted) return null;
+  const el = new Audio(src);
+  el.volume = Math.max(0, Math.min(1, vol));
+  const p = el.play();
+  if (p && p.catch) p.catch(() => {});
+  return el;
+}
+function hoot(vol = 1, dist = 0) {
+  if (muted || (owlEl && !owlEl.ended && !owlEl.paused)) return;
+  owlEl = playFx("audio/coruja.mp3", 0.5 * vol * (1 - dist * 0.65));
+}
+function wingFlap(v = 1) {
+  burst(260, 0.6, "lowpass", 0.1 * v, 0.16);
+  burst(420, 0.8, "bandpass", 0.06 * v, 0.14, 0.2);
+  burst(260, 0.6, "lowpass", 0.08 * v, 0.16, 0.42);
+}
+function sniffle() {
+  burst(3000, 1.2, "bandpass", 0.07, 0.12);
+  burst(2600, 1.2, "bandpass", 0.05, 0.16, 0.22);
+}
+function musicOut(secs = 2.5) {
   clearInterval(mTimer);
+  const v0 = bgm.volume;
+  let acc = 0, tl = performance.now();
   mTimer = setInterval(() => {
-    bgm.volume = Math.max(0, bgm.volume - 0.04);
-    if (bgm.volume <= 0) {
+    const n = performance.now();
+    acc += (n - tl) * gameSpeed;
+    tl = n;
+    const k = Math.min(1, acc / (secs * 1e3));
+    bgm.volume = Math.max(0, v0 * (1 - k) * (1 - k));
+    if (k >= 1) {
       clearInterval(mTimer);
       bgm.pause();
     }
-  }, 70);
+  }, 60);
 }
 function musicStop() {
   clearInterval(mTimer);
@@ -111,17 +137,23 @@ function musicIn(target = 0.6, secs = 18) {
   const p = bgm.play();
   if (p && p.catch) p.catch(() => {
   });
-  const t0 = performance.now();
+  let acc = 0, tl = performance.now();
   mTimer = setInterval(() => {
-    const k = Math.min(1, (performance.now() - t0) / (secs * 1e3));
+    const n = performance.now();
+    acc += (n - tl) * gameSpeed;
+    tl = n;
+    const k = Math.min(1, acc / (secs * 1e3));
     bgm.volume = target * k * k;
     if (k >= 1) clearInterval(mTimer);
   }, 100);
 }
+["img/btn_audio_on.webp", "img/btn_audio_off.webp"].forEach((u) => {
+  new Image().src = u;
+});
 $("#mute").onclick = (e) => {
   e.stopPropagation();
   muted = !muted;
   if (master) master.gain.value = muted ? 0 : 0.9;
-  e.target.textContent = muted ? "🔇" : "🔊";
+  $("#muteImg").src = muted ? "img/btn_audio_off.webp" : "img/btn_audio_on.webp";
   bgm.muted = muted;
 };

@@ -28,7 +28,7 @@ function LeafSys(cvs, o) {
   }
   function tick(t) {
     if (!on) return;
-    const dt = Math.min(0.05, (t - last) / 1e3 || 0);
+    const dt = Math.min(0.05, (t - last) / 1e3 || 0) * gameSpeed;
     last = t;
     T += dt;
     al += (to - al) * Math.min(1, dt * 1.2);

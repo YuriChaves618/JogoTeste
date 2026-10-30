@@ -45,6 +45,24 @@ const sadNear = (list, n) => {
 };
 const SAD_GROUND = 220;
 let bgGo = false, bgMix = 0;
+let duskGo = false, duskMix = 0, nightGo = false, nightMix = 0, duskAnchor = null;
+const faded = {};
+function softLeft(img, key, frac) {
+  if (faded[key]) return faded[key];
+  if (!img.naturalWidth) return img;
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  const g = c.getContext("2d");
+  g.drawImage(img, 0, 0);
+  const gr = g.createLinearGradient(0, 0, c.width * frac, 0);
+  gr.addColorStop(0, "rgba(0,0,0,0)");
+  gr.addColorStop(1, "rgba(0,0,0,1)");
+  g.globalCompositeOperation = "destination-in";
+  g.fillStyle = gr;
+  g.fillRect(0, 0, c.width, c.height);
+  return faded[key] = c;
+}
 let cur = null, curSet = null, talking = false;
 function show(el) {
   if (cur === el) return;
@@ -67,14 +85,17 @@ function setPose(p) {
   if (p === "sad") tSpeed = sadV;
   if (p === "sadback") show(talking ? IMG.tleft_fala : IMG.tleft);
   if (p === "sadfront") show(talking ? IMG.tfront_fala : IMG.tfront);
+  if (p === "tears") show(IMG.enxuga);
 }
 let last = 0;
 function loop(t) {
-  const dt = Math.min(0.05, (t - last) / 1e3 || 0);
+  const dt = Math.min(0.05, (t - last) / 1e3 || 0) * gameSpeed;
   last = t;
   speed += (tSpeed - speed) * Math.min(1, dt * 6);
   scroll += speed * dt;
   if (bgGo && bgMix < 1) bgMix = Math.min(1, bgMix + dt / 5);
+  if (duskGo && duskMix < 1) duskMix = Math.min(1, duskMix + dt / 11);
+  if (duskGo && duskAnchor === null) duskAnchor = scroll * 0.8 + W;
   const walking = pose === "walk" || pose === "sad";
   if (walking && boyX < tgtX) boyX = Math.min(tgtX, boyX + speed * dt);
   if (pose === "walk") {
@@ -117,6 +138,7 @@ function loop(t) {
     }
   } else if (pose === "sadback") show(talking ? IMG.tleft_fala : IMG.tleft);
   else if (pose === "sadfront") show(talking ? IMG.tfront_fala : IMG.tfront);
+  else if (pose === "tears") show(IMG.enxuga);
   else if (pose === "smile") show(talking ? IMG.front_sorriso_fala : IMG.front_sorriso);
   else if (pose === "front") show(talking ? IMG.front_fala : IMG.front);
   boyEl.style.transform = `translateX(${boyX}px) scaleX(${walking ? -1 : 1})`;
@@ -140,6 +162,12 @@ function tile(img, alpha) {
   }
   ctx.globalAlpha = 1;
 }
+// true quando a transição já passou e o cenário da noite ocupa a tela toda
+function nightArrived() {
+  if (duskAnchor === null || !BG3.naturalWidth || !BG4.naturalWidth) return false;
+  const iw3 = H * BG3.naturalWidth / BG3.naturalHeight, iw4 = H * BG4.naturalWidth / BG4.naturalHeight;
+  return duskAnchor - scroll * 0.8 + iw3 * 0.88 + iw4 * 0.12 <= 0;
+}
 function draw() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = "#222a22";
@@ -147,5 +175,22 @@ function draw() {
   const e = bgMix * bgMix * (3 - 2 * bgMix);
   if (e < 1) tile(BG, 1);
   if (e > 0) tile(BG2, e);
+  if (duskAnchor !== null && BG3.naturalWidth && BG4.naturalWidth) {
+    const iw3 = H * BG3.naturalWidth / BG3.naturalHeight, iw4 = H * BG4.naturalWidth / BG4.naturalHeight;
+    const x3 = duskAnchor - scroll * 0.8;
+    if (x3 < W && x3 + iw3 > 0) ctx.drawImage(softLeft(BG3, "t", 0.24), x3, 0, iw3 + 1, H);
+    const nx = x3 + iw3 - iw3 * 0.12;
+    for (let k = 0, x = nx; x < W; k++, x += iw4) {
+      if (x + iw4 <= 0) continue;
+      const img = k === 0 ? softLeft(BG4, "n", 0.12) : BG4;
+      if (k % 2) {
+        ctx.save();
+        ctx.translate(x + iw4, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, 0, 0, iw4 + 1, H);
+        ctx.restore();
+      } else ctx.drawImage(img, x, 0, iw4 + 1, H);
+    }
+  }
   drawWild();
 }
