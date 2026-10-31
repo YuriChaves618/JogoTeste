@@ -147,13 +147,14 @@ function musicIn(target = 0.6, secs = 18) {
     if (k >= 1) clearInterval(mTimer);
   }, 100);
 }
-["img/btn_audio_on.webp", "img/btn_audio_off.webp"].forEach((u) => {
+["img/interface/btn_audio_on.webp", "img/interface/btn_audio_off.webp"].forEach((u) => {
   new Image().src = u;
 });
 $("#mute").onclick = (e) => {
   e.stopPropagation();
   muted = !muted;
   if (master) master.gain.value = muted ? 0 : 0.9;
-  $("#muteImg").src = muted ? "img/btn_audio_off.webp" : "img/btn_audio_on.webp";
+  $("#muteImg").src = muted ? "img/interface/btn_audio_off.webp" : "img/interface/btn_audio_on.webp";
   bgm.muted = muted;
+  if (typeof fxLoops !== "undefined") fxLoops.forEach((e) => (e.muted = muted));
 };

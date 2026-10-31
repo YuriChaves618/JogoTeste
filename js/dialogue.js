@@ -1,7 +1,6 @@
 const dlg = $("#dlg"), cap = $("#cap"), fade = $("#fade"), chapter = $("#chapter");
 let typing = null, pend = null, finFn = null, curWho = "MENINO", guided = false;
 let autoT = null, autoLen = 0;
-// No modo acelerado, a fala avança sozinha depois de um instante (as escolhas NUNCA são puladas)
 function scheduleAuto() {
   clearTimeout(autoT);
   if (gameSpeed <= 1 || !pend || typing) return;
@@ -17,6 +16,7 @@ tip.textContent = matchMedia("(hover: hover) and (pointer: fine)").matches
 function say(text, who = curWho, swap) {
   return new Promise((res) => {
     dlg.style.display = "block";
+    dlg.classList.toggle("fera", who === "FERA");
     dlg.querySelector(".who").textContent = who;
     const tx = dlg.querySelector(".txt"), hint = dlg.querySelector(".hint");
     tx.textContent = "";
@@ -111,6 +111,32 @@ function choose(opts, silentIdx = -1) {
     box.style.display = "flex";
   });
 }
+async function interruptChoice(opts, showMs = 650) {
+  const box = $("#choice"), list = $("#opts");
+  $("#chT").textContent = "— ESCOLHA —";
+  $("#chP").style.display = "none";
+  $("#again").style.display = "none";
+  list.innerHTML = "";
+  opts.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.disabled = true;
+    b.innerHTML = "<b>" + (i + 1) + "</b>";
+    b.appendChild(document.createTextNode(t));
+    list.appendChild(b);
+  });
+  box.classList.remove("snap");
+  box.classList.add("lock");
+  box.style.display = "flex";
+  await wait(showMs);
+  playFx("audio/galho_susto.mp3", 1);
+  box.classList.add("snap");
+  stageShake();
+  await wait(140);
+  box.style.display = "none";
+  box.classList.remove("lock", "snap");
+  list.innerHTML = "";
+}
 function endCard() {
   $("#opts").innerHTML = "";
   $("#chT").textContent = "— FIM DESTA PARTE —";
@@ -122,9 +148,18 @@ function endCard() {
 }
 async function chapterCard() {
   await fontsReady;
+  clearInterval(mTimer);
+  if (bgm.paused) {
+    bgm.currentTime = 0;
+    bgm.muted = muted;
+    const p = bgm.play();
+    if (p && p.catch) p.catch(() => {});
+  }
+  bgm.volume = 0.75;
   chapter.classList.add("on");
   await wait(5e3);
   chapter.classList.remove("on");
-  musicOut();
-  await wait(1800);
+  await wait(1700);
+  musicOut(5.5);
+  await wait(100);
 }

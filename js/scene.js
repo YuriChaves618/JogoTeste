@@ -27,6 +27,7 @@ function resize() {
 }
 addEventListener("resize", resize);
 let sadMode = "", sadF = 0, sadT = 0;
+let boyJ = 0, boyShake = 0, hideK = 0, runMode = false, runDir = 1, boyFlip = 1, runArrived = false;
 let pose = "front", scroll = 0, speed = 0, tSpeed = 0, boyX = -999, tgtX = 0, frameT = 0, lastIdx = -1, walkV = 200, sadV = 70;
 const SAD_TALK = [2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16, 17, 18];
 const SAD_TALK_FPS = 7.5;
@@ -86,18 +87,29 @@ function setPose(p) {
   if (p === "sadback") show(talking ? IMG.tleft_fala : IMG.tleft);
   if (p === "sadfront") show(talking ? IMG.tfront_fala : IMG.tfront);
   if (p === "tears") show(IMG.enxuga);
+  if (p === "scared") show(IMG.medo);
+  if (p === "jump") show(IMG.salto);
 }
 let last = 0;
 function loop(t) {
   const dt = Math.min(0.05, (t - last) / 1e3 || 0) * gameSpeed;
   last = t;
   speed += (tSpeed - speed) * Math.min(1, dt * 6);
-  scroll += speed * dt;
+  if (!runMode) scroll += speed * dt;
   if (bgGo && bgMix < 1) bgMix = Math.min(1, bgMix + dt / 5);
   if (duskGo && duskMix < 1) duskMix = Math.min(1, duskMix + dt / 11);
   if (duskGo && duskAnchor === null) duskAnchor = scroll * 0.8 + W;
   const walking = pose === "walk" || pose === "sad";
-  if (walking && boyX < tgtX) boyX = Math.min(tgtX, boyX + speed * dt);
+  if (runMode) {
+    const d = tgtX - boyX, st = W * 0.42 * dt;
+    if (Math.abs(d) <= st) {
+      boyX = tgtX;
+      runArrived = true;
+    } else {
+      boyX += Math.sign(d) * st;
+      runDir = Math.sign(d);
+    }
+  } else if (walking && boyX < tgtX) boyX = Math.min(tgtX, boyX + speed * dt);
   if (pose === "walk") {
     const set = talking ? TALK : WALK;
     if (set !== curSet) {
@@ -105,7 +117,7 @@ function loop(t) {
       frameT = 0;
       lastIdx = -1;
     }
-    frameT += dt * 8;
+    frameT += dt * (runMode ? 13 : 8);
     const idx = Math.floor(frameT) % set.length;
     if (idx !== lastIdx) {
       show(IMG[set[idx]]);
@@ -139,9 +151,14 @@ function loop(t) {
   } else if (pose === "sadback") show(talking ? IMG.tleft_fala : IMG.tleft);
   else if (pose === "sadfront") show(talking ? IMG.tfront_fala : IMG.tfront);
   else if (pose === "tears") show(IMG.enxuga);
+  else if (pose === "scared") show(IMG.medo);
+  else if (pose === "jump") show(IMG.salto);
   else if (pose === "smile") show(talking ? IMG.front_sorriso_fala : IMG.front_sorriso);
   else if (pose === "front") show(talking ? IMG.front_fala : IMG.front);
-  boyEl.style.transform = `translateX(${boyX}px) scaleX(${walking ? -1 : 1})`;
+  const fx = walking ? (runMode && runDir < 0 ? 1 : -1) : boyFlip;
+  boyEl.style.transform = `translateX(${boyX + boyShake}px) translateY(${-boyJ}px) scaleX(${fx}) scaleY(${1 - 0.7 * hideK})`;
+  boyEl.style.opacity = hideK > 0.7 ? Math.max(0, 1 - (hideK - 0.7) / 0.3) : 1;
+  beastTick(dt);
   wildTick(dt);
   draw();
   requestAnimationFrame(loop);
@@ -162,7 +179,6 @@ function tile(img, alpha) {
   }
   ctx.globalAlpha = 1;
 }
-// true quando a transição já passou e o cenário da noite ocupa a tela toda
 function nightArrived() {
   if (duskAnchor === null || !BG3.naturalWidth || !BG4.naturalWidth) return false;
   const iw3 = H * BG3.naturalWidth / BG3.naturalHeight, iw4 = H * BG4.naturalWidth / BG4.naturalHeight;

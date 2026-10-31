@@ -5,18 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>When the Woods Remember</title>
 <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
-<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icones/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icones/icon-192.png">
+<link rel="apple-touch-icon" href="img/icones/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Unicial:wght@500&family=IM+Fell+English:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Unicial:wght@500&family=IM+Fell+English:ital@0;1&family=Creepster&family=Anton&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div id="stage">
   <canvas id="cv"></canvas>
   <div id="boy"></div>
+  <div id="beast"><div id="bGlow"></div></div>
+  <div id="bushes"></div>
+  <img id="frame" src="img/cenario/moldura.webp" alt="" draggable="false">
   <canvas id="wleaves"></canvas>
   <div id="vig"></div>
   <div id="tight"></div>
@@ -26,18 +29,25 @@
   <div id="dlg"><div class="who"></div><div class="txt"></div><div class="hint">▼</div><div class="tip"></div></div>
   <div id="choice"><div class="p"><h2 id="chT">— ESCOLHA —</h2><p id="chP"></p><div id="opts"></div><button id="again">↻ Reiniciar cena</button></div></div>
   <div id="fade"></div>
+  <div id="endscr">
+    <p id="eMain"></p>
+    <span id="eLine" class="ch-line"></span>
+    <p id="eSub"></p>
+    <div id="eCred"><span class="e-lbl">Créditos</span><span class="e-who">Criado e desenvolvido por Yuri Chaves Cabral.</span></div>
+    <button id="eAgain">↻ Reiniciar capítulo</button>
+  </div>
   <div id="chapter" aria-hidden="true">
     <div class="ch-num">Capítulo 1</div>
     <span class="ch-line"></span>
     <p class="ch-sub">Para onde estamos indo?</p>
   </div>
-  <button id="mute" aria-label="Som"><img id="muteImg" src="img/btn_audio_on.webp" alt="" draggable="false"></button>
-  <button id="ff" aria-label="Acelerar o jogo" aria-pressed="false" title="Acelerar / voltar ao normal"><img src="img/btn_ff.webp" alt="" draggable="false"></button>
+  <button id="mute" aria-label="Som"><img id="muteImg" src="img/interface/btn_audio_on.webp" alt="" draggable="false"></button>
+  <button id="ff" aria-label="Acelerar o jogo" aria-pressed="false" title="Acelerar / voltar ao normal"><img src="img/interface/btn_ff.webp" alt="" draggable="false"></button>
   <div id="start">
     <canvas id="leaves"></canvas>
-    <img id="fire" src="img/fogueira.webp" alt="" draggable="false">
+    <img id="fire" src="img/cenario/fogueira.webp" alt="" draggable="false">
     <div id="sUi">
-      <img id="title" src="img/titulo.webp" alt="When the Woods Remember">
+      <img id="title" src="img/interface/titulo.webp" alt="When the Woods Remember">
       <button id="go">COMEÇAR</button>
       <div id="sHint">🎧 use fones de ouvido</div>
     </div>
@@ -52,6 +62,7 @@
 <script src="js/wildlife.js"></script>
 <script src="js/dialogue.js"></script>
 <script src="js/scene.js"></script>
+<script src="js/fera.js"></script>
 <script src="js/story.js"></script>
 <script src="js/fastforward.js"></script>
 <script src="js/main.js"></script>

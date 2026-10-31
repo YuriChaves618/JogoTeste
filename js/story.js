@@ -12,6 +12,7 @@ function resetScene(keepMusic) {
   nightGo = false;
   nightMix = 0;
   noTrans($("#night"), () => $("#night").classList.remove("on"));
+  resetFera();
   sceneLeaves.stop(true);
   noTrans($("#tight"), () => $("#tight").classList.remove("on"));
   noTrans($("#mood"), () => $("#mood").classList.remove("on"));
@@ -35,7 +36,10 @@ function moodSad() {
 }
 const OPT1 = ["“Não faço ideia. Você está perdido também?”", "“Como conseguiu se perder tão rápido?”", "Ficar em silêncio e observar o menino."];
 const OPT2 = ["“Você está fazendo tudo isso pela sua mãe?”", "“Sinto muito. Você não deveria ter passado por isso.”", "“Por que ninguém tentou encontrar uma solução antes?”"];
-const OPT3 = ["“Você não tem medo de encontrar essa fera?”", "“E se as histórias sobre ela forem mentiras?”", "“Você não precisa provar que é corajoso para mim.”"];
+const OPT3 = ["“Você não tem medo de encontrar essa fera?”", "“E se todas essas histórias forem apenas mentiras?”", "“Você não precisa provar que é corajoso para mim.”"];
+const OPT4 = ["“Não... Eu pensei que tivesse sido você.”", "“Você também ouviu isso?”", "“Será que... é a fera?”"];
+const OPT5 = ["“Fique parado. Talvez ela não consiga te ver.”", "“SE ESCONDA! RÁPIDO, ELA ESTÁ VINDO!”", "“Calma, Finn. Deve ser alguém tentando te assustar.”"];
+const OPT6 = ["“Tenho certeza. Não precisa se preocupar, apenas fique aí.”", "“VOCÊ TEM RAZÃO! SE ESCONDA IMEDIATAMENTE!”"];
 const RESP2 = [
   [
     "— Faço por ela, por meus irmãos e por aqueles que virão… minha mãe e meus irmãos são a única coisa que me restou.",
@@ -176,6 +180,7 @@ async function run(fromStart) {
   await narr("", 2200);
   await say("— As pessoas começaram a trancar as portas umas para as outras.");
   while (!nightArrived()) await wait(100);
+  bushesShow(true);
   await wait(800);
   setPose("sadfront");
   await wait(1400);
@@ -187,9 +192,158 @@ async function run(fromStart) {
   await say("— Toda manhã, eu acordava pensando em quem seria o próximo a não conseguir se levantar da cama.");
   await say("— E eu não queria descobrir.");
   await wait(600);
-  const c3 = await choose(OPT3);
-  choices.push(c3);
-  await narr("— " + unq(OPT3[c3]), 2600);
-  endCard();
+  await interruptChoice(OPT3);
+  await finnStartle();
+  await wait(500);
+  await say("— A-Ah! O que foi isso?!");
+  await narr("Finn olha rapidamente ao redor.", 2300, () => lookAround(5));
+  await say("— Espera...");
+  await say("— Foi você que quebrou aquele galho?");
+
+  const c4 = await choose(OPT4);
+  choices.push(c4);
+  await narr("— " + unq(OPT4[c4]), 2400);
+  setPose("sadfront");
+  stopOwls();
+  windTo(0.01, 2.5);
+  await wait(3200);
+  startSong(0.02);
+  rampVol(songEl, 0.9, 40);
+  await wait(4200);
+  setPose("scared");
+  trembleLoop(1600);
+  await say("— Não...");
+  await say("— Não, não, não...");
+  await narr("Finn fica paralisado, olhando para a escuridão.", 3200);
+  await say("— Essa melodia...");
+  await say("— É ela...");
+  dlg.classList.add("rage");
+  await say("— É A FERA!");
+  dlg.classList.remove("rage");
+  await narr("Finn olha desesperadamente para o jogador.", 2800);
+  await say("— Rápido! O que eu faço?!");
+  await say("— Ela está vindo para cá!");
+
+  const c5 = await choose(OPT5);
+  choices.push(c5);
+  await narr("— " + unq(OPT5[c5]), 2400);
+  if (c5 === 0) {
+    await say("— Ficar parado...?");
+    await say("— T-Tudo bem...");
+    await say("— Eu confio em você.");
+    await badEnding();
+    return;
+  }
+  if (c5 === 1) {
+    await say("— Me esconder?!");
+    await narr("Finn olha desesperadamente para os lados.", 2300, () => lookAround(5));
+    await say("— Certo! Certo!");
+    await say("— Mas onde?!");
+    await say("— Eu não sei para onde ir!");
+  } else {
+    await say("— Alguém tentando me assustar...?");
+    await narr("Finn parece hesitar.", 2400);
+    await say("— Você tem certeza?");
+    await say("— Quem estaria andando por uma floresta a esta hora da noite?");
+    await say("— E por que estaria cantando uma melodia tão... triste?");
+    await narr("Finn olha novamente para a escuridão.", 2600, () => lookAround(1));
+    await say("— Eu não gosto disso...");
+    await say("— Não gosto nem um pouco.");
+    const c6 = await choose(OPT6);
+    choices.push(c6);
+    await narr("— " + unq(OPT6[c6]), 2400);
+    if (c6 === 0) {
+      await say("— Se você diz...");
+      await say("— Eu vou confiar em você.");
+      await badEnding();
+      return;
+    }
+    await say("— E-Eu sabia que tinha alguma coisa errada!");
+    await say("— Mas onde eu me escondo?!");
+  }
+  await pickBush();
+  await cena4();
+}
+async function shout(t, who = "FERA") {
+  dlg.classList.add("rage");
+  B.shake = 5;
+  await say(t, who);
+}
+function calm() {
+  dlg.classList.remove("rage");
+  B.shake = 0;
+}
+async function cena4() {
+  await wait(2800);
+  rampVol(songEl, 0, 9);
+  await wait(3500);
+  rampVol(themeEl, 0.6, 9);
+  await wait(3200);
+  beastStart();
+  bGoTo(0.5);
+  await wait(2200);
+  await say("— Hmmm...", "FERA");
+  await narr("A criatura caminha lentamente pela floresta.", 3200);
+  await say("— Que curioso...", "FERA");
+  await say("— Eu poderia jurar que senti alguém por aqui.", "FERA");
+  await say("— Um cheiro estranho...", "FERA");
+  await say("— Um invasor...", "FERA");
+  await say("— Mas onde será que ele foi?", "FERA");
+  await say("— Não é educado entrar na casa dos outros sem ser convidado...", "FERA");
+  await narr("", 2400);
+  await say("— Principalmente... na minha.", "FERA");
+
+  while (!B.arrived) await wait(100);
+  await wait(1000);
+  rampVol(themeEl, 0.16, 1.2);
+  await wait(900);
+  await beastPoint();
+  await say("— Espere...", "FERA");
+  await say("— O que...?", "FERA");
+  await narr("", 2600);
+  await shout("— VOCÊ...");
+  await shout("— FOI VOCÊ!");
+  beastPoint();
+  await shout("— FOI VOCÊ QUEM ENTROU NA MINHA FLORESTA!");
+  calm();
+  rampVol(themeEl, 0.5, 4);
+  await narr("Sua expressão muda para uma de fúria.", 2600);
+  await say("— Mas... espere um instante...", "FERA");
+  await say("— O que é isso que você está vestindo?", "FERA");
+  await narr("Ela observa atentamente na sua direção.", 2400);
+  await say("— Não...", "FERA");
+  await say("— Não pode ser...", "FERA");
+  await say("— Esse tecido...", "FERA");
+  await say("— Essa aparência...", "FERA");
+  await narr("Sua voz começa a demonstrar uma mistura de incredulidade e ódio.", 3400);
+  await shout("— QUEM TE DEU ESSE MANTO...");
+  await shout("— ESSE MANTO NÃO PERTENCE A VOCÊ!");
+  calm();
+  await narr("Ela aponta novamente na sua direção.", 2200, () => beastPoint());
+  await shout("— CRIATURA IMUNDA!");
+  await shout("— COMO OUSA?!");
+  beastPoint();
+  await shout("— DEVOLVA!");
+  await shout("— DEVOLVA O QUE É MEU!");
+  await shout("— DEVOLVA!");
+  beastPoint();
+  await shout("— DEVOLVA!!");
+  await shout("— DEVOLVAAAA!!!");
+  calm();
+  await cena5();
+}
+async function cena5() {
+  await beastCenter(700);
+  rampVol(themeEl, 1, 11);
+  startMenace(11);
+  const ap = beastApproach(11500);
+  await wait(10000);
+  await blackout(1500);
+  await ap;
+  beastHide();
+  await wait(2800);
+  await endText("CONTINUA...", "", 3800);
+  await endChapter("Capítulo II", "Em breve...", 4200);
+  await endThanks("Esta história está apenas começando...");
 }
 $("#again").onclick = () => run();
